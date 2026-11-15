@@ -1,0 +1,11 @@
+tensorflow>=2.20
+mlflow>=2.16,<3
+dvc[s3]>=3.50
+pillow
+reportlab
+numpy
+scikit-learn
+matplotlib
+pyyaml
+sqlalchemy<2.1
+pytest

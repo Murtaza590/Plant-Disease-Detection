@@ -1,0 +1,226 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+    - path: data/raw/PlantVillage
+      hash: md5
+      md5: 6873879105ba32a4686ee833586cbe4d.dir
+      size: 684461446
+      nfiles: 41278
+    - path: src/prepare.py
+      hash: md5
+      md5: e064e7eb4d0138f43168783657661294
+      size: 2603
+    params:
+      params.yaml:
+        prepare:
+          raw_dir: data/raw/PlantVillage
+          out_dir: data/processed
+          max_classes: 10
+          max_images_per_class: 300
+          img_size: 224
+          val_split: 0.15
+          test_split: 0.15
+          seed: 42
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 3b00ab22e6276e5380e6ecef5a9ad14e.dir
+      size: 66893689
+      nfiles: 2553
+  train@cnn:
+    cmd: python src/train.py --model cnn
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: 3b00ab22e6276e5380e6ecef5a9ad14e.dir
+      size: 66893689
+      nfiles: 2553
+    - path: src/model.py
+      hash: md5
+      md5: 8d217a8bfcd02f1eceb61da3fb836411
+      size: 2087
+    - path: src/train.py
+      hash: md5
+      md5: 70f1a3682e3f55b7a65294373a6ba207
+      size: 3418
+    - path: src/utils.py
+      hash: md5
+      md5: 215663b15e27bc5712ef6fb8914e6d9f
+      size: 1436
+    params:
+      params.yaml:
+        mlflow:
+          tracking_uri: sqlite:///mlflow.db
+          experiment_name: plant-disease-detection
+          registered_model_name: plant-disease-classifier
+        prepare.img_size: 224
+        train.batch_size: 32
+        train.cnn:
+          learning_rate: 0.001
+          dropout: 0.3
+        train.epochs: 5
+        train.seed: 42
+    outs:
+    - path: metrics/cnn_train.json
+      hash: md5
+      md5: 192253d4114eae7309448fe242e3eb7e
+      size: 118
+    - path: models/cnn
+      hash: md5
+      md5: 60ad479f095a447f609a0c18c5f977b5.dir
+      size: 1383049
+      nfiles: 3
+  train@mobilenet:
+    cmd: python src/train.py --model mobilenet
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: 3b00ab22e6276e5380e6ecef5a9ad14e.dir
+      size: 66893689
+      nfiles: 2553
+    - path: src/model.py
+      hash: md5
+      md5: 8d217a8bfcd02f1eceb61da3fb836411
+      size: 2087
+    - path: src/train.py
+      hash: md5
+      md5: 70f1a3682e3f55b7a65294373a6ba207
+      size: 3418
+    - path: src/utils.py
+      hash: md5
+      md5: 215663b15e27bc5712ef6fb8914e6d9f
+      size: 1436
+    params:
+      params.yaml:
+        mlflow:
+          tracking_uri: sqlite:///mlflow.db
+          experiment_name: plant-disease-detection
+          registered_model_name: plant-disease-classifier
+        prepare.img_size: 224
+        train.batch_size: 32
+        train.epochs: 5
+        train.mobilenet:
+          learning_rate: 0.0001
+          dropout: 0.2
+          pretrained: true
+        train.seed: 42
+    outs:
+    - path: metrics/mobilenet_train.json
+      hash: md5
+      md5: 626288b59652a677f59778c28828b781
+      size: 118
+    - path: models/mobilenet
+      hash: md5
+      md5: 0fa7e785611cf5dbb561914994b3076e.dir
+      size: 9782407
+      nfiles: 3
+  evaluate@cnn:
+    cmd: python src/evaluate.py --model cnn
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: 3b00ab22e6276e5380e6ecef5a9ad14e.dir
+      size: 66893689
+      nfiles: 2553
+    - path: models/cnn
+      hash: md5
+      md5: 60ad479f095a447f609a0c18c5f977b5.dir
+      size: 1383049
+      nfiles: 3
+    - path: src/evaluate.py
+      hash: md5
+      md5: ae24beafc3d528e945ade9378e41f74b
+      size: 2125
+    - path: src/utils.py
+      hash: md5
+      md5: 215663b15e27bc5712ef6fb8914e6d9f
+      size: 1436
+    params:
+      params.yaml:
+        mlflow:
+          tracking_uri: sqlite:///mlflow.db
+          experiment_name: plant-disease-detection
+          registered_model_name: plant-disease-classifier
+        prepare.img_size: 224
+    outs:
+    - path: metrics/cnn_test.json
+      hash: md5
+      md5: 5dddf05115d7d8921553435511834f67
+      size: 85
+    - path: plots/cnn_confusion_matrix.png
+      hash: md5
+      md5: 7a6971bcbc9b6a1e32c4411aa1578419
+      size: 95337
+  evaluate@mobilenet:
+    cmd: python src/evaluate.py --model mobilenet
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: 3b00ab22e6276e5380e6ecef5a9ad14e.dir
+      size: 66893689
+      nfiles: 2553
+    - path: models/mobilenet
+      hash: md5
+      md5: 0fa7e785611cf5dbb561914994b3076e.dir
+      size: 9782407
+      nfiles: 3
+    - path: src/evaluate.py
+      hash: md5
+      md5: ae24beafc3d528e945ade9378e41f74b
+      size: 2125
+    - path: src/utils.py
+      hash: md5
+      md5: 215663b15e27bc5712ef6fb8914e6d9f
+      size: 1436
+    params:
+      params.yaml:
+        mlflow:
+          tracking_uri: sqlite:///mlflow.db
+          experiment_name: plant-disease-detection
+          registered_model_name: plant-disease-classifier
+        prepare.img_size: 224
+    outs:
+    - path: metrics/mobilenet_test.json
+      hash: md5
+      md5: e40cc81566cb35a20944c9a7be01d07c
+      size: 83
+    - path: plots/mobilenet_confusion_matrix.png
+      hash: md5
+      md5: c80cd59c5cedab60a80a2165c25fad5d
+      size: 95676
+  register:
+    cmd: python src/register.py
+    deps:
+    - path: metrics/cnn_test.json
+      hash: md5
+      md5: 5dddf05115d7d8921553435511834f67
+      size: 85
+    - path: metrics/mobilenet_test.json
+      hash: md5
+      md5: e40cc81566cb35a20944c9a7be01d07c
+      size: 83
+    - path: models/cnn/run_id.txt
+      hash: md5
+      md5: 9959d7a1b499004322e41245a5201013
+      size: 32
+    - path: models/mobilenet/run_id.txt
+      hash: md5
+      md5: 4d9642c8fbbb00cef638a77eb664fe59
+      size: 32
+    - path: src/register.py
+      hash: md5
+      md5: 3ef31c7ba3dca4de7978f765feb6e024
+      size: 1731
+    params:
+      params.yaml:
+        mlflow:
+          tracking_uri: sqlite:///mlflow.db
+          experiment_name: plant-disease-detection
+          registered_model_name: plant-disease-classifier
+    outs:
+    - path: metrics/registered_model.json
+      hash: md5
+      md5: 209f2275c7c47695c14d2d0705baafe9
+      size: 166

@@ -1,0 +1,9 @@
+{
+  "registered_model": "plant-disease-classifier",
+  "champion": "mobilenet",
+  "champion_version": 2,
+  "versions": {
+    "cnn": 1,
+    "mobilenet": 2
+  }
+}

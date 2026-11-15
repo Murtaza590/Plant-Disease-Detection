@@ -1,0 +1,10 @@
+# MLflow local store (rebuilt by `dvc repro`)
+mlflow.db
+mlruns/
+__pycache__/
+*.pyc
+.venv/
+.env
+# NOTE: data/ and models/ are ignored automatically by DVC (see data/.gitignore, models/.gitignore)
+venv/
+.pytest_cache/

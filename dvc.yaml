@@ -1,0 +1,66 @@
+# Repeatable pipeline:  dvc repro
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+      - src/prepare.py
+      - data/raw/PlantVillage
+    params:
+      - prepare
+    outs:
+      - data/processed
+
+  train:
+    foreach: [cnn, mobilenet]
+    do:
+      cmd: python src/train.py --model ${item}
+      deps:
+        - src/train.py
+        - src/model.py
+        - src/utils.py
+        - data/processed
+      params:
+        - prepare.img_size
+        - train.batch_size
+        - train.epochs
+        - train.seed
+        - train.${item}
+        - mlflow
+      outs:
+        - models/${item}
+      metrics:
+        - metrics/${item}_train.json:
+            cache: false
+
+  evaluate:
+    foreach: [cnn, mobilenet]
+    do:
+      cmd: python src/evaluate.py --model ${item}
+      deps:
+        - src/evaluate.py
+        - src/utils.py
+        - models/${item}
+        - data/processed
+      params:
+        - prepare.img_size
+        - mlflow
+      metrics:
+        - metrics/${item}_test.json:
+            cache: false
+      plots:
+        - plots/${item}_confusion_matrix.png:
+            cache: false
+
+  register:
+    cmd: python src/register.py
+    deps:
+      - src/register.py
+      - metrics/cnn_test.json
+      - metrics/mobilenet_test.json
+      - models/cnn/run_id.txt
+      - models/mobilenet/run_id.txt
+    params:
+      - mlflow
+    metrics:
+      - metrics/registered_model.json:
+          cache: false

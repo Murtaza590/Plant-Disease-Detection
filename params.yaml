@@ -1,0 +1,26 @@
+prepare:
+  raw_dir: data/raw/PlantVillage      # one sub-folder per class
+  out_dir: data/processed
+  max_classes: 10                     # use null for all 38 classes
+  max_images_per_class: 300           # keeps training fast; null = all
+  img_size: 224
+  val_split: 0.15
+  test_split: 0.15
+  seed: 42
+
+train:
+  batch_size: 32
+  epochs: 5
+  seed: 42
+  cnn:
+    learning_rate: 0.001
+    dropout: 0.3
+  mobilenet:
+    learning_rate: 0.0001
+    dropout: 0.2
+    pretrained: true                  # ImageNet weights (set false for offline tests)
+
+mlflow:
+  tracking_uri: sqlite:///mlflow.db
+  experiment_name: plant-disease-detection
+  registered_model_name: plant-disease-classifier
